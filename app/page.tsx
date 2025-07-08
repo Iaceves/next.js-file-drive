@@ -1,14 +1,16 @@
 "use client"
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
-import { SignedIn } from "@clerk/clerk-react";
+import { SignedIn, useOrganization } from "@clerk/clerk-react";
 import { SignedOut, SignIn, SignInButton, SignOutButton, useSession } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 
 export default function Home() {
   const session = useSession();
+  const { organization } = useOrganization();
   const createFile = useMutation(api.file.createFile)
-  const files = useQuery(api.file.getFiles)
+  const files = useQuery(api.file.getFiles, organization?.id ? {orgId: organization.id} : "skip")
+  
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <SignedIn>
@@ -27,8 +29,12 @@ export default function Home() {
       })}
 
       <Button onClick={() => {
+        if(!organization){
+            return;
+          }
         createFile({
-          name: "hello World!"
+          name: "hello World!",
+          orgId: organization?.id
         })
       }}>Click Me</Button>
     </div>
