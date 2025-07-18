@@ -1,7 +1,5 @@
-
 import { ConvexError, v } from "convex/values";
 import { MutationCtx, QueryCtx, internalMutation } from "./_generated/server";
-
 
 export async function getUser(
   ctx: QueryCtx | MutationCtx,
@@ -17,10 +15,10 @@ export async function getUser(
   if (!user) {
     throw new ConvexError("expected user to be defined");
   }
-  
+
   return user;
 }
-//create user
+
 export const createUser = internalMutation({
   args: { tokenIdentifier: v.string() },
   async handler(ctx, args) {
@@ -31,14 +29,13 @@ export const createUser = internalMutation({
   },
 });
 
-//add organization to user
 export const addOrgIdToUser = internalMutation({
   args: { tokenIdentifier: v.string(), orgId: v.string() },
   async handler(ctx, args) {
     const user = await getUser(ctx, args.tokenIdentifier);
+
     await ctx.db.patch(user._id, {
       orgIds: [...user.orgIds, args.orgId],
     });
-    console.log("tokenIden: ", args.orgId)
   },
 });
