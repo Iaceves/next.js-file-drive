@@ -42,6 +42,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --success: var(--success);
+  --text-drop-down: var(--drop-down)
 }
 
 :root {
@@ -50,7 +51,7 @@
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(55.159% 0.17224 144.384);
+  --popover: oklch(94.118% 0.00747 152.601);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
@@ -78,6 +79,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   --success: rgb(24, 155, 24);
+  --drop-down: rgb(119, 42, 191);
 }
 
 .dark {
@@ -113,6 +115,7 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   --success: rgb(24, 155, 24);
+  --drop-down: rgb(119, 42, 191);
 }
 
 @layer base {
