@@ -31,9 +31,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-// import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react";
+import { Doc } from "@/convex/_generated/dataModel";
 
 const formSchema = z.object({
   title: z.string().min(1).max(200),
@@ -61,19 +61,29 @@ export default function UploadButton() {
     if (!orgId) return;
 
     const postUrl = await generateUploadUrl();
+    const fileType = values.file[0].type;
 
     const result = await fetch(postUrl, {
       method: "POST",
-      headers: { "Content-Type": values.file[0].type },
+      headers: { "Content-Type": fileType },
       body: values.file[0],
     });
     const { storageId } = await result.json();
+    console.log(values.file[0].type)
+
+    const types = {
+      "image/png": "image",
+      "application/pdf": "pdf",
+      "text/csv": "csv",
+      "image/gif": "gif"
+    } as Record<string, Doc<"files">["type"]>
 
     try {
       await createFile({
         name: values.title,
         fileId: storageId,
         orgId,
+        type: types[fileType]
       });
 
       form.reset();
