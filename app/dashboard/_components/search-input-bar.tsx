@@ -45,7 +45,7 @@ export function SearchBar({query, setQuery}: {query: string; setQuery: Dispatch<
                         render={({ field }) => (
                         <FormItem>
                             <FormControl>
-                            <Input {...field} placeholder="Your file names..." />
+                            <Input {...field} placeholder="Your file name..." />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
