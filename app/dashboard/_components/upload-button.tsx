@@ -69,7 +69,7 @@ export default function UploadButton() {
       body: values.file[0],
     });
     const { storageId } = await result.json();
-    console.log(values.file[0].type)
+    // console.log(values.file[0].type)
 
     const types = {
       "image/png": "image",

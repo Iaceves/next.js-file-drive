@@ -22,6 +22,8 @@ http.route({
         },
       });
 
+      console.log("results here:", result.data)
+
       switch (result.type) {
         case "user.created":
           await ctx.runMutation(internal.users.createUser, {
@@ -30,9 +32,20 @@ http.route({
           break;
           
         case "organizationMembership.created":
+          console.log("org created: ",result.data)
           await ctx.runMutation(internal.users.addOrgIdToUser, {
             tokenIdentifier: `https://absolute-redbird-43.clerk.accounts.dev|${result.data.public_user_data.user_id}`,
             orgId: result.data.organization.id,
+            role: result.data.role === "org:admin" ? "admin" : "member" ,
+          });
+          break;
+
+        case "organizationMembership.updated":
+          console.log("ORG updated: ", result.data);
+          await ctx.runMutation(internal.users.updateRoleInOrgForUser, {
+            tokenIdentifier: `https://${process.env.CLERK_HOSTNAME}|${result.data.public_user_data.user_id}`,
+            orgId: result.data.organization.id,
+            role: result.data.role === "org:admin" ? "admin" : "member",
           });
           break;
       }

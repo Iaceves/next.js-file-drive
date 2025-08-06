@@ -37,6 +37,7 @@ import { api } from "@/convex/_generated/api";
 import { toast } from "sonner"
 import Image from "next/image";
 import { useQuery } from "convex/react";
+import { Protect } from "@clerk/nextjs";
 
 
 
@@ -96,7 +97,12 @@ function FileCardActions ({ file, isFavorited }: {file: Doc<"files">; isFavorite
                         </div>
                     )}
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+        
+                <Protect 
+                    role="org:admin"
+                    fallback={<></>}
+                >
+                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                 className="flex gap-1 text-red-600 items-center" 
                 onClick={() => setIsConfirmOpen(true)}
@@ -104,7 +110,7 @@ function FileCardActions ({ file, isFavorited }: {file: Doc<"files">; isFavorite
                     <TrashIcon className="w-4 h-4 bg-text-red" />
                     Delete
                 </DropdownMenuItem>
-
+                </Protect >
             </DropdownMenuContent>
         </DropdownMenu>
         </>
@@ -139,6 +145,7 @@ export function FileCard ({ file, favorites }: {file: Doc<"files">, favorites: D
            
             </CardHeader>
             <CardContent className="h-[200px] flex justify-center items-center">
+                
                 {
                     file.type === "image" && (
                         <Image alt={file.name} width={200} height={100} src={fileUrl || "/placeholder.png"} />

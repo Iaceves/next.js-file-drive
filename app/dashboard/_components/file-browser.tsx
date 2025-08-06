@@ -78,3 +78,4 @@ export function FileBrowser({title, favoritesOnly}: {title: string, favoritesOnl
       </div>
   );
 }
+
