@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardAction,
@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Doc } from "@/convex/_generated/dataModel";
 
 import {
   DropdownMenu,
@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { TrashIcon, MoreVertical, ImageIcon, FileTextIcon, GanttChartIcon, Heart, StarsIcon } from "lucide-react";
+import { TrashIcon, MoreVertical, ImageIcon, FileTextIcon, GanttChartIcon, Heart, StarsIcon, UndoIcon, FileIcon } from "lucide-react";
 
 import {
   AlertDialog,
@@ -34,16 +34,20 @@ import {
 import { ReactNode, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { toast } from "sonner"
+import { toast } from "sonner"      
 import Image from "next/image";
 import { useQuery } from "convex/react";
 import { Protect } from "@clerk/nextjs";
+import { formatRelative } from "date-fns";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 
 
-function FileCardActions ({ file, isFavorited }: {file: Doc<"files">; isFavorited: boolean; }){
+function FileCardActions ({ file, isFavorited }: {file: Doc<"files"> & { url: string | null }; isFavorited: boolean;}){
 
     const deleteFile = useMutation(api.file.deleteFile)
+    const restoreFile = useMutation(api.file.restoreFile)
     const toggleFavorite = useMutation(api.file.toggleFavorite)
     const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
@@ -55,8 +59,7 @@ function FileCardActions ({ file, isFavorited }: {file: Doc<"files">; isFavorite
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your account
-                        and remove your data from our servers.
+                        This action will mark the file for our deletion process. Files will be deleted in 30 days for all.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -66,7 +69,7 @@ function FileCardActions ({ file, isFavorited }: {file: Doc<"files">; isFavorite
                     await deleteFile({
                       fileId: file._id
                     });
-                    toast("File Deleted", {description: "Your file is deleted from the system"})
+                    toast("File marked for Deletion", {description: "Your file will be deleted soon"})
                 }}
                 >
                     Continue
@@ -80,7 +83,7 @@ function FileCardActions ({ file, isFavorited }: {file: Doc<"files">; isFavorite
             <DropdownMenuContent>
 
                 <DropdownMenuItem 
-                className="flex gap-1 text-yellow-500 items-center" 
+                className="flex gap-1 text-yellow-500 items-center cursor-pointer" 
                 onClick={() => 
                     toggleFavorite({
                         fileId: file._id
@@ -88,14 +91,24 @@ function FileCardActions ({ file, isFavorited }: {file: Doc<"files">; isFavorite
                 }
                 >
                     {isFavorited ? (
-                        <div className="flex gap-1 items-center">
+                        <div className="flex gap-1 items-center cursor-pointer">
                             <StarsIcon className="w-4 h-4 text-yellow-600" /> Unfavorite
                         </div>
                     ) : (
-                        <div className="flex gap-1 items-center">
+                        <div className="flex gap-1 items-center cursor-pointer">
                             <Heart className="w-4 h-4 text-red-800"/> Favorite
                         </div>
                     )}
+                </DropdownMenuItem>
+
+                <DropdownMenuItem 
+                    className="flex gap-1 text-yellow-500 items-center cursor-pointer"
+                    onClick={() => {
+                     if (!file.url) return;
+                        window.open(file.url, "_blank");
+                    }}
+               >
+                    <FileIcon />Download
                 </DropdownMenuItem>
         
                 <Protect 
@@ -104,11 +117,26 @@ function FileCardActions ({ file, isFavorited }: {file: Doc<"files">; isFavorite
                 >
                  <DropdownMenuSeparator />
                 <DropdownMenuItem 
-                className="flex gap-1 text-red-600 items-center" 
-                onClick={() => setIsConfirmOpen(true)}
+                    className="flex gap-1 items-center cursor-pointer" 
+                    onClick={() => {
+                        if(file.shouldDelete){
+                            restoreFile({
+                                fileId: file._id,
+                            })
+                        } else {
+                        setIsConfirmOpen(true)
+                        }
+                    }}
                 >
-                    <TrashIcon className="w-4 h-4 bg-text-red" />
-                    Delete
+                    {file.shouldDelete ? (
+                        <div className="flex gap-1 text-green-600 items-center cursor-pointer">
+                            <UndoIcon className="w-4 h-4 bg-text-red" />Restore
+                        </div>
+                    ):(
+                        <div className="flex gap-1 text-red-600 items-center cursor-pointer">
+                            <TrashIcon className="w-4 h-4 bg-text-red" />Delete
+                        </div>
+                    )}
                 </DropdownMenuItem>
                 </Protect >
             </DropdownMenuContent>
@@ -120,7 +148,12 @@ function FileCardActions ({ file, isFavorited }: {file: Doc<"files">; isFavorite
 
 export function FileCard ({ file, favorites }: {file: Doc<"files">, favorites: Doc<"favorites">[]}){
 
+
     const fileUrl = useQuery(api.file.getFileUrl, { fileId: file.fileId });
+   
+    const userProfile = useQuery(api.users.getUserProfile, {
+        userId: file.userId,
+    });
 
     const typeIcons = {
       image: < ImageIcon />,
@@ -135,7 +168,7 @@ export function FileCard ({ file, favorites }: {file: Doc<"files">, favorites: D
         <Card>
             <CardHeader className="relative">
                 <CardTitle className="flex gap-2">
-                    <div className="flex justify-center">
+                    <div className="flex justify-center text-base font-normal">
                         {typeIcons[file.type]}
                     </div>{file.name}
                 </CardTitle>
@@ -148,9 +181,10 @@ export function FileCard ({ file, favorites }: {file: Doc<"files">, favorites: D
                 
                 {
                     file.type === "image" && (
-                        <Image alt={file.name} width={200} height={100} src={fileUrl || "/placeholder.png"} />
+                        <Image alt={file.name} width={200} height={100} src={fileUrl || `/placeholder.${file.type}`} />
                     )
                 }
+
                 {
                     file.type === "csv" && <GanttChartIcon className="w-20 h-20" />
                 }
@@ -159,15 +193,19 @@ export function FileCard ({ file, favorites }: {file: Doc<"files">, favorites: D
                 }
                 {
                     file.type === "gif" && (
-                        <Image alt={file.name} width={200} height={100} src={fileUrl || "/placeholder.gif"} />
+                        <Image alt={file.name} width={200} height={100} src={fileUrl || `/placeholder.${file.type}`} />
                     )
                 }
             </CardContent>
-            <CardFooter className="flex justify-center items-center">
-                <Button onClick={() => {
-                    // open a new tab to the file location on convex
-                    fileUrl && window.open(fileUrl, "_blank")
-                }}>Download</Button>
+            <CardFooter className="flex justify-between items-center">
+                <div className="flex gap-2 text-xs text-gray-700 w-30 items-center">
+                <Avatar className="w-6 h-6">
+                    <AvatarImage src={userProfile?.image} />
+                    <AvatarFallback>{userProfile?.name}</AvatarFallback>
+                </Avatar>
+                    {userProfile?.name}
+                </div>
+                <div className="text-xs text-gray-700 w-36">Uploaded on {formatRelative(new Date(file._creationTime), new Date())} </div>
             </CardFooter>
         </Card>
     ) 

@@ -1,11 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { OrganizationSwitcher, SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
+import Image from "next/image";
+import Link from "next/link";
 
 export function Header(){
     return (
         <div className="border-b py-4 bg-gray-50">
             <div className="items-center container mx-auto justify-between flex">
-                <div>File Drive App</div>
+                <Link href="/" className="flex gap-2 items-center">
+                    <Image src="/a-logo.avif" alt="logo.avif" width={50} height={50} className="rounded-full"/>File Drive App
+                </Link>
+                <Button variant="outline">
+                    <Link href="/dashboard/files">
+                        Your Files
+                    </Link>
+                </Button>
                 <div className="flex gap-2">
                     <OrganizationSwitcher />
                     <UserButton />
