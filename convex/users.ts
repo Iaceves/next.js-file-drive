@@ -13,6 +13,8 @@ export async function getUser(
     )
     .first();
 
+    // console.log("user token: ", user?.tokenIdentifier)
+
   if (!user) {
     throw new ConvexError("expected user to be defined");
   }
@@ -99,6 +101,7 @@ export const getMe = query({
   args: {},
   async handler(ctx) {
     const identity = await ctx.auth.getUserIdentity();
+    console.log("identity here: ", identity)
 
     if (!identity) {
       return null;

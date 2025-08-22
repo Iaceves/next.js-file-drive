@@ -44,7 +44,7 @@ export function FileBrowser({title, favoritesOnly, deletedOnly}: {title: string,
   const organization = useOrganization();
   const user = useUser();
   const [query, setQuery] = useState("");
-  const [type, setType] = useState<Doc<"files">["type"] | "all">("all")
+  const [type, setType] = useState<Doc<"files">["type"] | "all">("all");
 
 
   let orgId: string | undefined = undefined;
@@ -70,6 +70,29 @@ export function FileBrowser({title, favoritesOnly, deletedOnly}: {title: string,
     )
   })) ?? [];
 
+  //this is a helper function for Type filter
+//   const typeFilter = ({title, favoritesOnly, deletedOnly}: {title: string, favoritesOnly: boolean, deletedOnly: boolean}) =>{
+//       const [type, setType] = useState<Doc<"files">["type"] | "all">("all");
+
+//   <div className="flex gap-2">
+//     <Label htmlFor="type-select">Type filter</Label>
+//     <Select value={type} onValueChange={(newType) => {
+//       setType(newType as any)
+//     }}>
+//       <SelectTrigger id="type-select" className="w-[180px] text-black-700">
+//         <SelectValue />
+//       </SelectTrigger>
+//       <SelectContent>
+//         <SelectItem value="all">All</SelectItem>
+//         <SelectItem value="image">Image</SelectItem>
+//         <SelectItem value="csv">CSV</SelectItem>
+//         <SelectItem value="pdf">PDF</SelectItem>
+//         <SelectItem value="gif">GIF</SelectItem>
+//       </SelectContent>
+//     </Select>
+//   </div>
+// }
+
   return (
       <div>
 
@@ -82,10 +105,29 @@ export function FileBrowser({title, favoritesOnly, deletedOnly}: {title: string,
 
 
         {!isLoading && files?.length === 0 && ( 
+          <div>
+            <div className="flex justify-end">
+              <Label htmlFor="type-select">Type filter</Label>
+              <Select value={type} onValueChange={(newType) => {
+                setType(newType as any)
+              }}>
+                <SelectTrigger id="type-select" className="w-[180px] text-black-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="csv">CSV</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="gif">GIF</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex flex-col gap-8 w-full items-center mt-20">
               <SearchBar query={query} setQuery={setQuery} />
               <Placeholder />
             </div>
+          </div>
           )}
           
 
